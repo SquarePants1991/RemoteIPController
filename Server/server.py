@@ -4,6 +4,7 @@ import thread
 
 def conn_process_thread(conn, addr):
     print("Connect with: " + str(addr[0]) + ":" + str(addr[1]))
+    conn.sendall("Hello Client")
     while True:
         data = conn.recv(1024)
         conn.send("U Sayed: ")
@@ -12,7 +13,7 @@ def conn_process_thread(conn, addr):
 
 def start_server():
     HOST = ''
-    PORT = 9001
+    PORT = 9003
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
