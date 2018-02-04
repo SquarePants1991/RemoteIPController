@@ -1,9 +1,11 @@
-#line 1 "/Users/ocean/Documents/Projects/GitHub/RemoteiPhoneController/Client/Snapshot/Snapshot/Snapshot.xm"
+#line 1 "/Users/yangwang/Documents/Projects/OnGit/RemoteIPController/Client/Snapshot/Snapshot/Snapshot.xm"
 
 
 
 
 #import <UIKit/UIKit.h>
+#import "RemoteCommandService.h"
+
 @interface SBScreenshotManager: NSObject
 - (void)saveScreenshotsWithCompletion:(id)sender;
     @end
@@ -35,29 +37,54 @@
 
 @class SpringBoard; 
 static void (*_logos_orig$_ungrouped$SpringBoard$applicationDidFinishLaunching$)(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); static void _logos_method$_ungrouped$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST, SEL, id); 
-static __inline__ __attribute__((always_inline)) __attribute__((unused)) Class _logos_static_class_lookup$SpringBoard(void) { static Class _klass; if(!_klass) { _klass = objc_getClass("SpringBoard"); } return _klass; }
-#line 14 "/Users/ocean/Documents/Projects/GitHub/RemoteiPhoneController/Client/Snapshot/Snapshot/Snapshot.xm"
+
+#line 16 "/Users/yangwang/Documents/Projects/OnGit/RemoteIPController/Client/Snapshot/Snapshot/Snapshot.xm"
 
 
 
 static void _logos_method$_ungrouped$SpringBoard$applicationDidFinishLaunching$(_LOGOS_SELF_TYPE_NORMAL SpringBoard* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, id application)   {
-　　_logos_orig$_ungrouped$SpringBoard$applicationDidFinishLaunching$(self, _cmd, application); 
+　　 _logos_orig$_ungrouped$SpringBoard$applicationDidFinishLaunching$(self, _cmd, application); 
+    [[RemoteCommandService shared] startWithHost:@"192.168.0.104" port:9009];
 
-    SBScreenshotManager *manager = [[_logos_static_class_lookup$SpringBoard() sharedApplication] screenshotManager];
-    [manager saveScreenshotsWithCompletion:^(id sth) {
-        UIImage *img = nil;
-        for (NSString *key in sth) {
-            img = sth[key];
+    
+    [[RemoteCommandService shared] registerCommand:1000 handler:^(NSData *) {
+        SBScreenshotManager *manager = [[objc_getClass("SpringBoard") sharedApplication] screenshotManager];
+        [manager saveScreenshotsWithCompletion:^(id sth) {
+            UIImage *img = nil;
+            for (NSString *key in sth) {
+                img = sth[key];
+            }
+            
+            NSData *imageData = UIImagePNGRepresentation(img);
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://192.168.0.104:8070"]];
+            request.HTTPMethod = @"POST";
+            [[[NSURLSession sharedSession] uploadTaskWithRequest:request fromData:imageData] resume];
+        }];
+    }];
+
+    
+    [[RemoteCommandService shared] registerCommand:1001 handler:^(NSData *data) {
+        id json = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+        if (json) {
+            CGPoint loc;
+            loc.x = [json[@"x"] floatValue];
+            loc.y = [json[@"y"] floatValue];
+            char buffer[255];
+            sprintf(buffer, "stouch touch %.0f %.0f", loc.x, loc.y);
+            system(buffer);
         }
-        
-        　　UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Welcome" message:[NSString stringWithFormat:@"%@", img] delegate:self cancelButtonTitle:@"Thanks" otherButtonTitles:nil];
-        　　[alert show];
-        　　[alert release];
-        
-        NSData *imageData = UIImagePNGRepresentation(img);
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://192.168.74.90:8070"]];
-        request.HTTPMethod = @"POST";
-        [[[NSURLSession sharedSession] uploadTaskWithRequest:request fromData:imageData] resume];
+    }];
+
+    [[RemoteCommandService shared] registerCommand:1002 handler:^(NSData *data) {
+        [[objc_getClass("SBBacklightController") sharedInstance] turnOnScreenFullyWithBacklightSource:0];
+        [[objc_getClass("SBLockScreenManager") sharedInstance] unlockUIFromSource:0 withOptions:nil];
+    }];
+
+   [[RemoteCommandService shared] registerCommand:1003 handler:^(NSData *data) {
+        NSString *cmd = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if (cmd) {
+            system([cmd UTF8String]);
+        }
     }];
 
 }
@@ -65,4 +92,4 @@ static void _logos_method$_ungrouped$SpringBoard$applicationDidFinishLaunching$(
 
 static __attribute__((constructor)) void _logosLocalInit() {
 {Class _logos_class$_ungrouped$SpringBoard = objc_getClass("SpringBoard"); MSHookMessageEx(_logos_class$_ungrouped$SpringBoard, @selector(applicationDidFinishLaunching:), (IMP)&_logos_method$_ungrouped$SpringBoard$applicationDidFinishLaunching$, (IMP*)&_logos_orig$_ungrouped$SpringBoard$applicationDidFinishLaunching$);} }
-#line 40 "/Users/ocean/Documents/Projects/GitHub/RemoteiPhoneController/Client/Snapshot/Snapshot/Snapshot.xm"
+#line 67 "/Users/yangwang/Documents/Projects/OnGit/RemoteIPController/Client/Snapshot/Snapshot/Snapshot.xm"

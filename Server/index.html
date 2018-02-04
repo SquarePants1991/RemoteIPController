@@ -1,0 +1,88 @@
+<html>
+<head>
+    <script
+  src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        $().ready(function(){
+            $("#preview-area").click(function(e){
+                var x = e.pageX - e.target.offsetLeft;
+                var y = e.pageY - e.target.offsetTop;
+                var payload = {x: x, y: y};
+                var payloadstr = JSON.stringify(payload);
+                $.ajax({
+                    url: '/',
+                    type: 'PUT',
+                    data: 
+                    {
+                        command: 1001,
+                        payload: payloadstr
+                    }
+                });
+            });
+
+            $("#refresh-button").click(function(e){
+                $.ajax({
+                    url: '/',
+                    type: 'PUT',
+                    data: 
+                    {
+                        command: 1000,
+                        payload: 'ss'
+                    }
+                });
+            });
+
+            $("#restart-button").click(function(e){
+                $.ajax({
+                    url: '/',
+                    type: 'PUT',
+                    data: 
+                    {
+                        command: 1003,
+                        payload: 'killall -HUP SpringBoard'
+                    }
+                });
+            });
+
+            $("#unlock-button").click(function(e){
+                $.ajax({
+                    url: '/',
+                    type: 'PUT',
+                    data: 
+                    {
+                        command: 1002,
+                        payload: 'ss'
+                    }
+                });
+            });
+
+            setInterval(function() {
+                $("#preview-area").attr("src", "/screen?pb=" + (new Date()).getTime())
+            }, 3000);
+        });
+    </script>
+    <style type="text/css">
+        .button {
+            display: block;
+            margin:auto;
+            width: 320px;
+            height: 44px;
+            color: rgb(26, 46, 100);
+            cursor: pointer;
+        }
+        #preview-area {
+            display: block;
+            margin:auto;
+            width: 320px;
+        }
+    </style>
+</head>
+    <body>
+    <img id="preview-area" src="/screen"/>
+    <div id="refresh-button" class="button">Refresh</div>
+    <div id="restart-button" class="button">Restart</div>
+    <div id="unlock-button" class="button">Unlock</div>
+    </body>
+</html>
